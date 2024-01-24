@@ -1,0 +1,13 @@
+{
+  "name": "fastify-plugin-example",
+  "description": "An example to configure fastify-plugin",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "fastify start index.js -l info -w"
+  },
+  "dependencies": {
+    "fastify": "^4.25.2",
+    "fastify-cli": "^6.0.0"
+  }
+}
