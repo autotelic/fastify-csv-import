@@ -1,19 +1,42 @@
-import fastify, { FastifyInstance } from 'fastify'
+import fastify, { FastifyInstance, FastifyRequest } from 'fastify'
 // eslint-disable-next-line import/no-unresolved
-import { expectAssignable, expectError } from 'tsd'
+import { expectAssignable, expectError, expectType } from 'tsd'
 
-import fastifyPluginTemplate from '..'
+import fastifyCsvImport from '..'
+
+import type { CsvImportArgs, CsvImportResults, fastifyCsvImportOptions } from './index.d.ts'
 
 const app = fastify()
 
-const opt1 = {
-  mandatory: 'string'
+const opt1: fastifyCsvImportOptions = {}
+expectAssignable<FastifyInstance>(app.register(fastifyCsvImport, opt1))
+
+app.register(fastifyCsvImport, opt1).after(() => {
+  expectType<(args: CsvImportArgs) => Promise<CsvImportResults>>(app.csvImport)
+})
+
+const mockRequest: FastifyRequest = {} as FastifyRequest
+
+const validCsvImportArgs: CsvImportArgs = {
+  req: mockRequest,
+  validationSchema: { type: 'object', properties: { name: { type: 'string' } } }
 }
+expectAssignable<CsvImportArgs>(validCsvImportArgs)
 
-expectAssignable<FastifyInstance>(app.register(fastifyPluginTemplate, opt1))
-
-const errOpt1 = {
-  error: true
+const invalidCsvImportArgs = {
+  req: mockRequest,
+  validationSchema: 'invalid'
 }
+expectError<CsvImportArgs>(invalidCsvImportArgs)
 
-expectError(app.register(fastifyPluginTemplate, errOpt1))
+const mockCsvImportResults: CsvImportResults = {
+  rows: [{ column1: 'value1', column2: 'value2' }],
+  errors: { 1: [{ keyword: 'type', instancePath: '.column1', schemaPath: '#/properties/column1/type', params: { type: 'string' }, message: 'should be string' }] }
+}
+expectAssignable<CsvImportResults>(mockCsvImportResults)
+
+const invalidCsvImportResults = {
+  rows: [{ column1: 'value1', column2: 'value2' }],
+  errors: { 1: 'not an array of errors or valid error format' }
+}
+expectError<CsvImportResults>(invalidCsvImportResults)

@@ -1,12 +1,21 @@
 import fastify from 'fastify'
 import { test } from 'tap'
 
-import fastifyPluginTemplate from '../index.js'
+import fastifyCsvImport from '../index.js'
 
-test('fastify-plugin-template plugin should exist', async ({ ok }) => {
+test('plugin should exist along with registering fastify-multipart', async ({ ok }) => {
   const app = fastify()
-  app.register(fastifyPluginTemplate, {})
+  app.register(fastifyCsvImport)
   await app.ready()
 
-  ok(app.hasPlugin('fastify-plugin-template'))
+  ok(app.hasPlugin('fastify-csv-import'))
+  ok(app.hasPlugin('@fastify/multipart'))
+})
+
+test('should decorate fastify with `csvImport`', async ({ ok }) => {
+  const app = fastify()
+  app.register(fastifyCsvImport)
+  await app.ready()
+
+  ok(app.csvImport)
 })
