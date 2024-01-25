@@ -32,16 +32,7 @@ export async function csvImport ({ req, validationSchema }) {
       })
       .on('end', () => {
         const errorLength = Object.keys(errors).length
-        if (errorLength > 0 && errorLength < 20) {
-          console.dir({ errors }, { depth: null })
-          reject(errors)
-        } else {
-          if (parsedRows.length < 20) {
-            console.dir({ parsedRows }, { depth: null })
-          }
-          console.dir({ rowLength: parsedRows.length, errorLength }, { depth: null })
-          resolve()
-        }
+        errorLength ? reject(errors) : resolve()
       })
       .on('error', err => {
         reject(err)

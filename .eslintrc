@@ -17,5 +17,8 @@
     ],
     "parser": "@typescript-eslint/parser",
     "plugins": ["@typescript-eslint"]
-  }]
+  }],
+  "rules": {
+    "multiline-comment-style": "off"
+  }
 }
