@@ -1,5 +1,5 @@
 {
-  "name": "@autotelic/fastify-plugin-template",
+  "name": "@autotelic/fastify-csv-import",
   "version": "0.0.0",
   "description": "Plugin for Fastify",
   "main": "index.js",
@@ -14,33 +14,38 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "test": "tap",
-    "test:ci": "npm run lint && npm run test && npm run test:types",
-    "test:types": "tsd"
+    "test": "tap --allow-incomplete-coverage",
+    "validate": "npm run lint && npm test && npm run test:types",
+    "test:types": "tsd",
+    "start": "cd ./example && ts-node index.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/autotelic/fastify-plugin-template.git"
+    "url": "git+https://github.com/autotelic/fastify-csv-import.git"
   },
   "keywords": [],
   "author": "Autotelic Development Ltd <info@autotelic.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/autotelic/fastify-plugin-template/issues"
+    "url": "https://github.com/autotelic/fastify-csv-import/issues"
   },
-  "homepage": "https://github.com/autotelic/fastify-plugin-template#readme",
+  "homepage": "https://github.com/autotelic/fastify-csv-import#readme",
   "dependencies": {
+    "@fast-csv/parse": "^5.0.0",
+    "@fastify/multipart": "^8.1.0",
+    "ajv": "^8.12.0",
     "fastify-plugin": "^4.5.1"
   },
   "devDependencies": {
     "@autotelic/eslint-config-js": "^0.2.1",
-    "@autotelic/fastify-injector": "^0.2.0",
+    "@autotelic/fastify-injector": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
     "eslint": "^8.56.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "fastify": "^4.25.2",
     "tap": "^18.6.1",
+    "ts-node": "^10.9.2",
     "tsd": "^0.30.3",
     "typescript": "^5.3.3"
   },

@@ -16,4 +16,4 @@ jobs:
           node-version-file: .node-version
           registry-url: 'https://registry.npmjs.org'
       - run: npm install
-      - run: npm run test:ci
+      - run: npm run validate

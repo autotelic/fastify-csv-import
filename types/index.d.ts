@@ -1,10 +1,27 @@
-import type { FastifyPluginCallback } from 'fastify'
+import { RowMap } from '@fast-csv/parse'
+import { Schema, ErrorObject } from 'ajv'
+import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 
-export interface PluginOptions {
-  mandatory: string
+export interface Row extends RowMap<string> {}
+export interface Errors extends Record<number, ErrorObject[] | { fileError: string } | null | undefined> {}
+export interface CsvImportResults {
+    rows: Row[]
+    errors: Errors
+}
+export type CsvImportArgs = {
+    req: FastifyRequest
+    validationSchema: Schema
 }
 
-declare const fastifyPluginTemplate: FastifyPluginCallback<PluginOptions>
+declare module 'fastify' {
+    interface FastifyInstance {
+      csvImport: ({ req, validationSchema }:CsvImportArgs) => Promise<CsvImportResults>
+    }
+}
 
-export default fastifyPluginTemplate
-export { fastifyPluginTemplate }
+export interface fastifyCsvImportOptions {}
+
+declare const fastifyCsvImport: FastifyPluginCallback<fastifyCsvImportOptions>
+
+export default fastifyCsvImport
+export { fastifyCsvImport }
