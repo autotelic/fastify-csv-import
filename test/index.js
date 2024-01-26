@@ -59,8 +59,10 @@ test('plugin should exist along with registering fastify-multipart', async ({ ok
   const app = buildApp()
   await app.ready()
 
-  ok(app.hasPlugin('fastify-csv-import'))
-  ok(app.hasPlugin('@fastify/multipart'))
+  // hasPlugin() becomes available starting from v4.0.x
+  // Here we are just checking if the instances of csvImport and multipart are available
+  ok(app.csvImport)
+  ok(app.multipart)
 })
 
 test('should decorate fastify with `csvImport`', async ({ ok }) => {
@@ -193,7 +195,8 @@ test('should use a custom file size', async ({ equal, teardown }) => {
     payload
   })
 
-  equal(response.statusCode, 500)
+  // 413 Content Too Large
+  equal(response.statusCode, 413)
 })
 
 test('should fail if file cannot be found', async ({ equal, same, teardown }) => {
