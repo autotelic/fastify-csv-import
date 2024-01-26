@@ -55,12 +55,12 @@ function makeFormData (fileContent) {
   return { payload, headers }
 }
 
-test('plugin should exist along with registering fastify-multipart', async ({ ok }) => {
+test('plugin should exists', async ({ ok }) => {
   const app = buildApp()
   await app.ready()
 
   // hasPlugin() becomes available starting from v4.0.x
-  // Here we are just checking if the instances of csvImport
+  // Here we are just checking if the instance of csvImport is available
   ok(app.csvImport)
 })
 
