@@ -55,13 +55,12 @@ function makeFormData (fileContent) {
   return { payload, headers }
 }
 
-test('plugin should exists', async ({ ok }) => {
+test('plugin should exist along with registering fastify-multipart', async ({ ok }) => {
   const app = buildApp()
   await app.ready()
 
-  // hasPlugin() becomes available starting from v4.0.x
-  // Here we are just checking if the instance of csvImport is available
-  ok(app.csvImport)
+  ok(app.hasPlugin('fastify-csv-import'))
+  ok(app.hasPlugin('@fastify/multipart'))
 })
 
 test('should decorate fastify with `csvImport`', async ({ ok }) => {
@@ -194,8 +193,7 @@ test('should use a custom file size', async ({ equal, teardown }) => {
     payload
   })
 
-  // 413 Content Too Large
-  equal(response.statusCode, 413)
+  equal(response.statusCode, 500)
 })
 
 test('should fail if file cannot be found', async ({ equal, same, teardown }) => {

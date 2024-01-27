@@ -45,7 +45,10 @@ export async function csvImport ({ req, validationSchema }) {
 const fastifyCsvImport = fastifyPlugin(async fastify => {
   fastify.register(fastifyMultipart)
   fastify.decorate('csvImport', csvImport)
-}, { name: 'fastify-csv-import' })
+}, {
+  fastify: '4.x',
+  name: 'fastify-csv-import'
+})
 
 export { fastifyCsvImport }
 export default fastifyCsvImport
