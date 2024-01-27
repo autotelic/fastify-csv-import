@@ -59,15 +59,3 @@ For a more detailed example, including how to handle various scenarios and error
 ### Configuration Options
 
 - `MAX_CSV_IMPORT`: An optional environment variable to set the maximum CSV file size. If not set, defaults to 50MB.
-
-## Triggering a Release
-
-_Prerequisite: Update repository access for the shared [NPM_PUBLISH_TOKEN](https://github.com/organizations/autotelic/settings/secrets/actions/NPM_PUBLISH_TOKEN) secret._
-
-Trigger the release workflow via a tag
-
-  ```sh
-  git checkout main && git pull
-  npm version { minor | major | path }
-  git push --follow-tags
-  ```
