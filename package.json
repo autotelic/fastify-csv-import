@@ -40,7 +40,7 @@
     "@autotelic/eslint-config-js": "^0.3.0",
     "@autotelic/fastify-injector": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
-    "@typescript-eslint/parser": "^6.18.1",
+    "@typescript-eslint/parser": "^7.1.1",
     "eslint": "^8.56.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "fastify": "^4.25.2",
