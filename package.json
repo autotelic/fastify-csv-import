@@ -37,7 +37,7 @@
     "fastify-plugin": "^4.5.1"
   },
   "devDependencies": {
-    "@autotelic/eslint-config-js": "^0.3.0",
+    "@autotelic/eslint-config-js": "^0.4.0",
     "@autotelic/fastify-injector": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
