@@ -4,10 +4,8 @@ import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import fastifyPlugin from 'fastify-plugin'
 
-const csvImporter = async (fastify, opts = {
-  formats: []
-}) => {
-  const { formats } = opts
+const csvImporter = async (fastify, opts) => {
+  const { formats = [] } = opts
 
   const ajv = new Ajv()
   addFormats(ajv)
