@@ -28,7 +28,11 @@ function buildApp ({ validationSchema = defaultSchema, hasFileError = false } = 
     }
   }
   const app = fastifyInjector(injectorOpts)
-  app.register(fastifyCsvImport)
+  app.register(fastifyCsvImport, {
+    formats: [
+      ['price', /^\d{1,8}(?:\.\d{1,4})?$/]
+    ]
+  })
 
   app.post('/', async (req, reply) => {
     const { rows, errors } = await app.csvImport({ req, validationSchema })

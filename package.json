@@ -34,6 +34,7 @@
     "@fast-csv/parse": "^5.0.0",
     "@fastify/multipart": "^8.1.0",
     "ajv": "^8.12.0",
+    "ajv-formats": "^3.0.1",
     "fastify-plugin": "^4.5.1"
   },
   "devDependencies": {
