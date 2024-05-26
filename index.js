@@ -1,4 +1,4 @@
-import csv from '@fast-csv/parse'
+import * as csv from '@fast-csv/parse'
 import fastifyMultipart from '@fastify/multipart'
 import Ajv from 'ajv'
 import fastifyPlugin from 'fastify-plugin'
