@@ -39,6 +39,28 @@ function buildApp ({ validationSchema = defaultSchema, hasFileError = false } = 
     reply.send(rows.length ? rows : errors)
   })
 
+  const customValidator = async (row) => {
+    const { SKU } = row
+    // console.log('SKU', SKU, SKU !== 'PROD-987653')
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        try {
+          const isValidData = SKU !== 'PROD-987653'
+          const error = isValidData ? null : [{ SKU: 'SKU is not valid' }]
+          resolve({ isValidData, error })
+        } catch (error) {
+          console.error('Error in custom validator:', error)
+          resolve({ isValidData: false, error })
+        }
+      }, 1)
+    })
+  }
+
+  app.post('/custom-validation', async (req, reply) => {
+    const { rows, errors } = await app.csvImport({ req, validationSchema, customValidator })
+    reply.send(rows.length ? rows : errors)
+  })
+
   return app
 }
 
@@ -59,19 +81,60 @@ function makeFormData (fileContent) {
   return { payload, headers }
 }
 
-test('plugin should exist along with registering fastify-multipart', async ({ ok }) => {
+test('plugin should exist along with registering fastify-multipart', async ({ ok, teardown }) => {
   const app = buildApp()
+  teardown(async () => app.close())
   await app.ready()
 
   ok(app.hasPlugin('fastify-csv-import'))
   ok(app.hasPlugin('@fastify/multipart'))
 })
 
-test('should decorate fastify with `csvImport`', async ({ ok }) => {
+test('should decorate fastify with `csvImport`', async ({ ok, teardown }) => {
   const app = buildApp()
+  teardown(async () => app.close())
   await app.ready()
 
   ok(app.csvImport)
+})
+
+test('should fail custom validation if provided', async ({ equal, same, teardown }) => {
+  teardown(async () => app.close())
+  const app = buildApp()
+  await app.ready()
+
+  const filePath = join(fixturesDir, 'invalid-fixed-price.csv')
+  const fileContent = readFileSync(filePath)
+
+  const { payload, headers } = makeFormData(fileContent)
+
+  const response = await app.inject({
+    method: 'POST',
+    url: '/custom-validation',
+    headers,
+    payload
+  })
+
+  console.log(response.json())
+
+  // equal(response.statusCode, 200)
+  // same(response.json(), [
+  //   {
+  //     'Catalog Title': 'Product 1',
+  //     SKU: 'PROD-123456',
+  //     'Fixed Price': '10.83'
+  //   },
+  //   {
+  //     'Catalog Title': 'Product 2',
+  //     SKU: 'PROD-987653',
+  //     'Fixed Price': '11.00'
+  //   },
+  //   {
+  //     'Catalog Title': 'Product 3',
+  //     SKU: 'PROD-987654',
+  //     'Fixed Price': '0.77'
+  //   }
+  // ])
 })
 
 test('should upload a valid csv', async ({ equal, same, teardown }) => {

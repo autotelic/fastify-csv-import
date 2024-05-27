@@ -11,8 +11,27 @@ const csvImporter = async (fastify, opts) => {
   addFormats(ajv)
   formats.forEach(format => ajv.addFormat(...format))
 
-  async function csvImport ({ req, validationSchema }) {
+  async function csvImport ({ req, validationSchema, customValidator }) {
     const rowValidator = ajv.compile(validationSchema)
+
+    const asyncValidator = (row, cb) => {
+      const isValidSchema = rowValidator(row)
+      // console.log('isValidSchema', rowValidator.errors)
+      setImmediate(async () => {
+        try {
+          const { isValidData, error } = await customValidator(row)
+          console.log('isValidData', isValidData, error)
+          cb(null, isValidData && isValidSchema, error)
+        } catch (err) {
+          console.error('Error in validate handler:', err)
+          cb(null, false)
+        }
+      })
+    }
+
+    const validator = typeof customValidator === 'function'
+      ? asyncValidator
+      : row => rowValidator(row)
 
     const errors = {}
     const parsedRows = []
@@ -30,11 +49,15 @@ const csvImporter = async (fastify, opts) => {
     await new Promise((resolve, reject) => {
       data.file
         .pipe(csv.parse({ headers: true }))
-        .validate(row => rowValidator(row))
+        .validate(validator)
         .on('data', row => parsedRows.push(row))
-        .on('data-invalid', (row, rowNumber) => {
+        .on('data-invalid', (row, rowNumber, reason) => {
+          console.log('reason', reason)
           rowValidator(row)
-          errors[rowNumber] = rowValidator.errors
+          errors[rowNumber] = [
+            ...reason !== null ? reason : [],
+            ...rowValidator.errors !== null ? rowValidator.errors : []
+          ]
         })
         .on('end', () => {
           const errorLength = Object.keys(errors).length

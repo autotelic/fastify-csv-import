@@ -2,16 +2,16 @@ import Fastify from 'fastify'
 
 import fastifyCsvImport from '../index.js'
 
-const PORT = 3000
-
-const fastify = Fastify()
+const fastify = Fastify({
+  logger: { level: 'info'}
+})
 
 const validationSchema = {
   type: 'object',
   properties: {
     'Catalog Title': { type: 'string' },
     SKU: { type: 'string' },
-    'Fixed Price': { type: 'string', format: 'price' }
+    'Fixed Price': { type: 'string' }
   },
   required: ['Catalog Title', 'SKU', 'Fixed Price']
 }
@@ -22,7 +22,11 @@ fastify.post('/csv/import', async (req, reply) => {
   if (!fastify.csvImport) {
     throw new Error('fastify-csv-import plugin is not available')
   }
-  const { rows, errors } = await fastify.csvImport({ req, validationSchema })
+  const { rows, errors } = await fastify.csvImport({
+    req, validationSchema
+  })
+  console.log('rows', rows)
+  console.log('errors', errors)
   const rowsLength = rows.length
   const errorsLength = Object.keys(errors).length
   if (rowsLength > 20 || errorsLength > 20) {
@@ -36,6 +40,17 @@ fastify.post('/csv/import', async (req, reply) => {
   reply.send(rows || errors)
 })
 
-fastify.listen({ port: PORT }, (_, address) => {
-  console.log(`listening at ${address}`)
-})
+const start = async () => {
+  try {
+    await fastify.listen({ port: 3000 })
+  } catch (err) {
+    console.log('here')
+    fastify.log.error(err)
+    process.exit(1)
+  }
+}
+start()
+
+// fastify.listen({ port: PORT }, (_, address) => {
+//   console.log(`listening at ${address}`)
+// })
