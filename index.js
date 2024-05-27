@@ -7,7 +7,7 @@ import fastifyPlugin from 'fastify-plugin'
 const csvImporter = async (fastify, opts) => {
   const { formats = [] } = opts
 
-  const ajv = new Ajv()
+  const ajv = new Ajv({ coerceTypes: true })
   addFormats(ajv)
   formats.forEach(format => ajv.addFormat(...format))
 
