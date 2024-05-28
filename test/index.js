@@ -115,26 +115,19 @@ test('should fail custom validation if provided', async ({ equal, same, teardown
     payload
   })
 
-  console.log(response.json())
-
-  // equal(response.statusCode, 200)
-  // same(response.json(), [
-  //   {
-  //     'Catalog Title': 'Product 1',
-  //     SKU: 'PROD-123456',
-  //     'Fixed Price': '10.83'
-  //   },
-  //   {
-  //     'Catalog Title': 'Product 2',
-  //     SKU: 'PROD-987653',
-  //     'Fixed Price': '11.00'
-  //   },
-  //   {
-  //     'Catalog Title': 'Product 3',
-  //     SKU: 'PROD-987654',
-  //     'Fixed Price': '0.77'
-  //   }
-  // ])
+  equal(response.statusCode, 500)
+  same(response.json(), {
+    2: [
+      { SKU: 'SKU is not valid' },
+      {
+        instancePath: '/Fixed Price',
+        schemaPath: '#/properties/Fixed%20Price/format',
+        keyword: 'format',
+        params: { format: 'price' },
+        message: 'must match format "price"'
+      }
+    ]
+  })
 })
 
 test('should upload a valid csv', async ({ equal, same, teardown }) => {

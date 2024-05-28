@@ -16,15 +16,12 @@ const csvImporter = async (fastify, opts) => {
 
     const asyncValidator = (row, cb) => {
       const isValidSchema = rowValidator(row)
-      // console.log('isValidSchema', rowValidator.errors)
       setImmediate(async () => {
         try {
           const { isValidData, error } = await customValidator(row)
-          console.log('isValidData', isValidData, error)
           cb(null, isValidData && isValidSchema, error)
         } catch (err) {
-          console.error('Error in validate handler:', err)
-          cb(null, false)
+          cb(null, false, [err])
         }
       })
     }
@@ -51,11 +48,10 @@ const csvImporter = async (fastify, opts) => {
         .pipe(csv.parse({ headers: true }))
         .validate(validator)
         .on('data', row => parsedRows.push(row))
-        .on('data-invalid', (row, rowNumber, reason) => {
-          console.log('reason', reason)
+        .on('data-invalid', (row, rowNumber, reasons) => {
           rowValidator(row)
           errors[rowNumber] = [
-            ...reason !== null ? reason : [],
+            ...reasons !== undefined ? reasons : [],
             ...rowValidator.errors !== null ? rowValidator.errors : []
           ]
         })
