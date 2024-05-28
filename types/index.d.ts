@@ -11,7 +11,7 @@ export interface CsvImportResults {
 export type CsvImportArgs = {
     req: FastifyRequest
     validationSchema: Schema
-    customValidator: (row: Row) => Promise<ErrorObject | null> | undefined
+    customValidator: (row: Row) => Promise<void> | undefined
 }
 
 declare module 'fastify' {
