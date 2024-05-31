@@ -19,7 +19,10 @@ const mockRequest: FastifyRequest = {} as FastifyRequest
 
 const validCsvImportArgs: CsvImportArgs = {
   req: mockRequest,
-  validationSchema: { type: 'object', properties: { name: { type: 'string' } } }
+  validationSchema: { type: 'object', properties: { name: { type: 'string' } } },
+  customValidator (): Promise<{ isValidData: boolean; error: never[] }> | undefined {
+    throw new Error('Function not implemented.')
+  }
 }
 expectAssignable<CsvImportArgs>(validCsvImportArgs)
 

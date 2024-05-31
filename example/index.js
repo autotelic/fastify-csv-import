@@ -3,7 +3,7 @@ import Fastify from 'fastify'
 import fastifyCsvImport from '../index.js'
 
 const fastify = Fastify({
-  logger: { level: 'info'}
+  logger: { level: 'info' }
 })
 
 const validationSchema = {
