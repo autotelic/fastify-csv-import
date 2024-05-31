@@ -20,7 +20,8 @@ const mockRequest: FastifyRequest = {} as FastifyRequest
 const validCsvImportArgs: CsvImportArgs = {
   req: mockRequest,
   validationSchema: { type: 'object', properties: { name: { type: 'string' } } },
-  customValidator (): Promise<{ isValidData: boolean; error: never[] }> | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  customValidator (): Promise<{ isValidData: boolean; error: any[] }> | undefined {
     throw new Error('Function not implemented.')
   }
 }

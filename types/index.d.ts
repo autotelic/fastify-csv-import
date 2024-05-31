@@ -11,7 +11,8 @@ export interface CsvImportResults {
 export type CsvImportArgs = {
     req: FastifyRequest
     validationSchema: Schema
-    customValidator: (row: Row) => Promise<{ isValidData: boolean; error: never[] }> | undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    customValidator: (row: Row) => Promise<{ isValidData: boolean; error: any[] }> | undefined
 }
 
 declare module 'fastify' {
