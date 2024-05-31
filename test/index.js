@@ -3,6 +3,7 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
 import fastifyInjector from '@autotelic/fastify-injector'
+import sinon from 'sinon'
 import { test } from 'tap'
 
 import fastifyCsvImport from '../index.js'
@@ -61,6 +62,17 @@ function buildApp ({ validationSchema = defaultSchema, hasFileError = false } = 
     reply.send(rows.length ? rows : errors)
   })
 
+  const customValidatorMock = sinon.stub().returns({ isValidData: true, error: null })
+
+  app.post('/custom-validation-mock', async (req, reply) => {
+    const { rows, errors } = await app.csvImport({
+      req, validationSchema, customValidator: customValidatorMock
+    })
+    reply.send(rows.length ? rows : errors)
+  })
+
+  app.customValidatorMock = customValidatorMock
+
   return app
 }
 
@@ -98,12 +110,12 @@ test('should decorate fastify with `csvImport`', async ({ ok, teardown }) => {
   ok(app.csvImport)
 })
 
-test('should fail custom validation if provided', async ({ equal, same, teardown }) => {
+test('should use custom validator if provided', async ({ equal, same, teardown }) => {
   teardown(async () => app.close())
   const app = buildApp()
   await app.ready()
 
-  const filePath = join(fixturesDir, 'invalid-fixed-price.csv')
+  const filePath = join(fixturesDir, 'invalid-sku.csv')
   const fileContent = readFileSync(filePath)
 
   const { payload, headers } = makeFormData(fileContent)
@@ -118,7 +130,33 @@ test('should fail custom validation if provided', async ({ equal, same, teardown
   equal(response.statusCode, 500)
   same(response.json(), {
     2: [
-      { SKU: 'SKU is not valid' },
+      { SKU: 'SKU is not valid' }
+    ]
+  })
+})
+
+test('should not call custom validator if schema invalid', async ({ equal, same, ok, teardown }) => {
+  teardown(async () => app.close())
+  const app = buildApp()
+  await app.ready()
+
+  const filePath = join(fixturesDir, 'invalid-fixed-price.csv')
+  const fileContent = readFileSync(filePath)
+
+  const { payload, headers } = makeFormData(fileContent)
+
+  const response = await app.inject({
+    method: 'POST',
+    url: '/custom-validation-mock',
+    headers,
+    payload
+  })
+
+  ok(app.customValidatorMock.calledTwice)
+  equal(response.statusCode, 500)
+
+  same(response.json(), {
+    2: [
       {
         instancePath: '/Fixed Price',
         schemaPath: '#/properties/Fixed%20Price/format',

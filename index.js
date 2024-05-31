@@ -18,6 +18,10 @@ const csvImporter = async (fastify, opts) => {
       const isValidSchema = rowValidator(row)
       setImmediate(async () => {
         try {
+          if (!isValidSchema) {
+            cb(null, false)
+            return
+          }
           const { isValidData, error } = await customValidator(row)
           cb(null, isValidData && isValidSchema, error)
         } catch (err) {
