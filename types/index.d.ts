@@ -3,7 +3,7 @@ import { Schema, ErrorObject } from 'ajv'
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 
 export interface Row extends RowMap<string> {}
-export interface Errors extends Record<number, ErrorObject[] | { fileError: string } | null | undefined> {}
+export interface Errors extends Record<number, ErrorObject[] | { fileError: string } | null | undefined> { }
 export interface CsvImportResults {
     rows: Row[]
     errors: Errors
@@ -11,11 +11,12 @@ export interface CsvImportResults {
 export type CsvImportArgs = {
     req: FastifyRequest
     validationSchema: Schema
+    customValidator: (row: Row) => Promise<{ isValidData: boolean; error: never[] }> | undefined
 }
 
 declare module 'fastify' {
     interface FastifyInstance {
-      csvImport: ({ req, validationSchema }:CsvImportArgs) => Promise<CsvImportResults>
+        csvImport: ({ req, validationSchema, customValidator }:CsvImportArgs) => Promise<CsvImportResults>
     }
 }
 

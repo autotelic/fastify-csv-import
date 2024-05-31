@@ -3,6 +3,7 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
 import fastifyInjector from '@autotelic/fastify-injector'
+import sinon from 'sinon'
 import { test } from 'tap'
 
 import fastifyCsvImport from '../index.js'
@@ -28,12 +29,49 @@ function buildApp ({ validationSchema = defaultSchema, hasFileError = false } = 
     }
   }
   const app = fastifyInjector(injectorOpts)
-  app.register(fastifyCsvImport)
+  app.register(fastifyCsvImport, {
+    formats: [
+      ['price', /^\d{1,8}(?:\.\d{1,4})?$/]
+    ]
+  })
 
   app.post('/', async (req, reply) => {
     const { rows, errors } = await app.csvImport({ req, validationSchema })
     reply.send(rows.length ? rows : errors)
   })
+
+  const customValidator = async (row) => {
+    const { SKU } = row
+    // console.log('SKU', SKU, SKU !== 'PROD-987653')
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        try {
+          const isValidData = SKU !== 'PROD-987653'
+          const error = isValidData ? null : [{ SKU: 'SKU is not valid' }]
+          resolve({ isValidData, error })
+        } catch (error) {
+          console.error('Error in custom validator:', error)
+          resolve({ isValidData: false, error })
+        }
+      }, 1)
+    })
+  }
+
+  app.post('/custom-validation', async (req, reply) => {
+    const { rows, errors } = await app.csvImport({ req, validationSchema, customValidator })
+    reply.send(rows.length ? rows : errors)
+  })
+
+  const customValidatorMock = sinon.stub().returns({ isValidData: true, error: null })
+
+  app.post('/custom-validation-mock', async (req, reply) => {
+    const { rows, errors } = await app.csvImport({
+      req, validationSchema, customValidator: customValidatorMock
+    })
+    reply.send(rows.length ? rows : errors)
+  })
+
+  app.customValidatorMock = customValidatorMock
 
   return app
 }
@@ -55,19 +93,79 @@ function makeFormData (fileContent) {
   return { payload, headers }
 }
 
-test('plugin should exist along with registering fastify-multipart', async ({ ok }) => {
+test('plugin should exist along with registering fastify-multipart', async ({ ok, teardown }) => {
   const app = buildApp()
+  teardown(async () => app.close())
   await app.ready()
 
   ok(app.hasPlugin('fastify-csv-import'))
   ok(app.hasPlugin('@fastify/multipart'))
 })
 
-test('should decorate fastify with `csvImport`', async ({ ok }) => {
+test('should decorate fastify with `csvImport`', async ({ ok, teardown }) => {
   const app = buildApp()
+  teardown(async () => app.close())
   await app.ready()
 
   ok(app.csvImport)
+})
+
+test('should use custom validator if provided', async ({ equal, same, teardown }) => {
+  teardown(async () => app.close())
+  const app = buildApp()
+  await app.ready()
+
+  const filePath = join(fixturesDir, 'invalid-sku.csv')
+  const fileContent = readFileSync(filePath)
+
+  const { payload, headers } = makeFormData(fileContent)
+
+  const response = await app.inject({
+    method: 'POST',
+    url: '/custom-validation',
+    headers,
+    payload
+  })
+
+  equal(response.statusCode, 500)
+  same(response.json(), {
+    2: [
+      { SKU: 'SKU is not valid' }
+    ]
+  })
+})
+
+test('should not call custom validator if schema invalid', async ({ equal, same, ok, teardown }) => {
+  teardown(async () => app.close())
+  const app = buildApp()
+  await app.ready()
+
+  const filePath = join(fixturesDir, 'invalid-fixed-price.csv')
+  const fileContent = readFileSync(filePath)
+
+  const { payload, headers } = makeFormData(fileContent)
+
+  const response = await app.inject({
+    method: 'POST',
+    url: '/custom-validation-mock',
+    headers,
+    payload
+  })
+
+  ok(app.customValidatorMock.calledTwice)
+  equal(response.statusCode, 500)
+
+  same(response.json(), {
+    2: [
+      {
+        instancePath: '/Fixed Price',
+        schemaPath: '#/properties/Fixed%20Price/format',
+        keyword: 'format',
+        params: { format: 'price' },
+        message: 'must match format "price"'
+      }
+    ]
+  })
 })
 
 test('should upload a valid csv', async ({ equal, same, teardown }) => {
