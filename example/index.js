@@ -11,12 +11,16 @@ const validationSchema = {
   properties: {
     'Catalog Title': { type: 'string' },
     SKU: { type: 'string' },
-    'Fixed Price': { type: 'string' }
+    'Fixed Price': { type: 'string', format: 'price' }
   },
   required: ['Catalog Title', 'SKU', 'Fixed Price']
 }
 
-fastify.register(fastifyCsvImport)
+fastify.register(fastifyCsvImport, {
+  formats: [
+    ['price', /^\d{1,8}(?:\.\d{1,4})?$/]
+  ]
+})
 
 fastify.post('/csv/import', async (req, reply) => {
   if (!fastify.csvImport) {
@@ -50,7 +54,3 @@ const start = async () => {
   }
 }
 start()
-
-// fastify.listen({ port: PORT }, (_, address) => {
-//   console.log(`listening at ${address}`)
-// })
