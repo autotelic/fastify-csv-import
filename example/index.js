@@ -2,22 +2,6 @@ import Fastify from 'fastify'
 
 import fastifyCsvImport from '../index.js'
 
-const customValidator = async (row) => {
-  const { SKU } = row
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      try {
-        const isValidData = SKU !== 'PROD-987653'
-        const error = isValidData ? null : [{ SKU: 'SKU is not valid' }]
-        resolve({ isValidData, error })
-      } catch (error) {
-        console.error('Error in custom validator:', error)
-        resolve({ isValidData: false, error })
-      }
-    }, 1)
-  })
-}
-
 const fastify = Fastify({
   logger: {
     level: 'info',
@@ -30,8 +14,8 @@ const fastify = Fastify({
 const validationSchema = {
   type: 'object',
   properties: {
-    'Catalog Title': { type: 'string', format: 'ats' },
-    SKU: { type: 'string' },
+    'Catalog Title': { type: 'string' },
+    SKU: { type: 'string', format: 'ats' },
     'Fixed Price': { type: 'string', format: 'price' }
   },
   required: ['Catalog Title', 'SKU', 'Fixed Price']
@@ -49,7 +33,7 @@ fastify.post('/csv/import', async (req, reply) => {
     throw new Error('fastify-csv-import plugin is not available')
   }
   const { rows, errors } = await fastify.csvImport({
-    req, validationSchema, customValidator
+    req, validationSchema
   })
   console.log('rows', rows)
   console.log('errors', errors)
@@ -70,7 +54,6 @@ const start = async () => {
   try {
     await fastify.listen({ port: 3000 })
   } catch (err) {
-    console.log('here')
     fastify.log.error(err)
     process.exit(1)
   }

@@ -50,7 +50,6 @@ const csvImporter = async (fastify, opts) => {
         .on('data', row => parsedRows.push(row))
         .on('data-invalid', (row, rowNumber, reasons) => {
           rowValidator(row)
-          console.log('rowValidator.errors', rowValidator.errors)
           errors[rowNumber] = [
             ...reasons !== undefined ? reasons : [],
             ...rowValidator.errors !== null ? rowValidator.errors : []

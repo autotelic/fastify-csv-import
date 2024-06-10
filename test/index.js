@@ -44,14 +44,9 @@ function buildApp ({ validationSchema = defaultSchema, hasFileError = false } = 
     const { SKU } = row
     return new Promise((resolve) => {
       setTimeout(() => {
-        try {
-          const isValidData = SKU !== 'PROD-987653'
-          const error = isValidData ? null : [{ SKU: 'SKU is not valid' }]
-          resolve({ isValidData, error })
-        } catch (error) {
-          console.error('Error in custom validator:', error)
-          resolve({ isValidData: false, error })
-        }
+        const isValidData = SKU !== 'PROD-987653'
+        const error = isValidData ? undefined : [{ SKU: 'SKU is not valid' }]
+        resolve({ isValidData, error })
       }, 1)
     })
   }
@@ -61,7 +56,7 @@ function buildApp ({ validationSchema = defaultSchema, hasFileError = false } = 
     reply.send(rows.length ? rows : errors)
   })
 
-  const customValidatorMock = sinon.stub().returns({ isValidData: true, error: null })
+  const customValidatorMock = sinon.stub().returns({ isValidData: true })
 
   app.post('/custom-validation-mock', async (req, reply) => {
     const { rows, errors } = await app.csvImport({
@@ -134,7 +129,7 @@ test('should use custom validator if provided', async ({ equal, same, teardown }
   })
 })
 
-test('should not call custom validator if schema invalid', async ({ equal, same, ok, teardown }) => {
+test('should still call custom validator if schema invalid', async ({ equal, same, ok, teardown }) => {
   teardown(async () => app.close())
   const app = buildApp()
   await app.ready()
@@ -151,7 +146,7 @@ test('should not call custom validator if schema invalid', async ({ equal, same,
     payload
   })
 
-  ok(app.customValidatorMock.calledTwice)
+  ok(app.customValidatorMock.calledThrice)
   equal(response.statusCode, 500)
 
   same(response.json(), {
