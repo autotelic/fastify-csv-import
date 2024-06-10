@@ -7,7 +7,7 @@ import fastifyPlugin from 'fastify-plugin'
 const csvImporter = async (fastify, opts) => {
   const { formats = [] } = opts
 
-  const ajv = new Ajv({ coerceTypes: true })
+  const ajv = new Ajv({ coerceTypes: true, allErrors: true })
   addFormats(ajv)
   formats.forEach(format => ajv.addFormat(...format))
 
@@ -18,10 +18,6 @@ const csvImporter = async (fastify, opts) => {
       const isValidSchema = rowValidator(row)
       setImmediate(async () => {
         try {
-          if (!isValidSchema) {
-            cb(null, false)
-            return
-          }
           const { isValidData, error } = await customValidator(row)
           cb(null, isValidData && isValidSchema, error)
         } catch (err) {
@@ -54,6 +50,7 @@ const csvImporter = async (fastify, opts) => {
         .on('data', row => parsedRows.push(row))
         .on('data-invalid', (row, rowNumber, reasons) => {
           rowValidator(row)
+          console.log('rowValidator.errors', rowValidator.errors)
           errors[rowNumber] = [
             ...reasons !== undefined ? reasons : [],
             ...rowValidator.errors !== null ? rowValidator.errors : []

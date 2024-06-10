@@ -42,7 +42,6 @@ function buildApp ({ validationSchema = defaultSchema, hasFileError = false } = 
 
   const customValidator = async (row) => {
     const { SKU } = row
-    // console.log('SKU', SKU, SKU !== 'PROD-987653')
     return new Promise((resolve) => {
       setTimeout(() => {
         try {
